@@ -66,7 +66,10 @@ arguments = dict(
         'setuptools_sky',
     ],
     install_requires=[
-        'setuptools-scm>1.5.4'
+        'setuptools-scm>=1.5.4'
+    ],
+    setup_requires=[
+        'setuptools-scm>=1.5.4'
     ],
 
     entry_points="""
