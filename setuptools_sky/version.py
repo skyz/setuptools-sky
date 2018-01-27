@@ -144,7 +144,7 @@ def guess_next_dev_version(version):
             if target_branch.startswith('master'):
                 return '%s.%s' % (version.tag.base_version, version.format_with('rc{distance}'))
             elif target_branch.startswith('develop'):
-                return '%s.%s' % (version.tag.base_version, version.format_with('beta{distance}'))
+                return '%s.%s' % (version.tag.base_version, version.format_with('alpha{distance}'))
         elif branch_name.startswith('master'):
             return version.tag.base_version
         elif branch_name.startswith('release'):
