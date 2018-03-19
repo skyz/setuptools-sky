@@ -1,15 +1,18 @@
 from __future__ import print_function
 
+import datetime
 import os
 import re
 import warnings
 from distutils import log
 
-from setuptools_scm import trace
-from setuptools_scm.version import callable_or_entrypoint
+from pkg_resources import iter_entry_points
+
+from .utils import trace
 
 try:
-    from pkg_resources import parse_version, SetuptoolsVersion
+    from pkg_resources import parse_version
+    from pkg_resources._vendor.packaging.version import Version as SetuptoolsVersion
 except ImportError as e:
     parse_version = SetuptoolsVersion = None
 
@@ -17,7 +20,18 @@ except ImportError as e:
 def _warn_if_setuptools_outdated():
     if parse_version is None:
         log.warn("your setuptools is too old (<12)")
-        log.warn("setuptools_scm functionality is degraded")
+        log.warn("setuptools_sky functionality is degraded")
+
+
+def callable_or_entrypoint(group, callable_or_name):
+    trace('ep', (group, callable_or_name))
+
+    if callable(callable_or_name):
+        return callable_or_name
+
+    for ep in iter_entry_points(group, callable_or_name):
+        trace("ep found:", ep.name)
+        return ep.load()
 
 
 def tag_to_version(tag):
@@ -42,6 +56,42 @@ def tags_to_versions(tags):
     return [v for v in versions if v is not None]
 
 
+class ScmVersion(object):
+    def __init__(self, tag_version,
+                 distance=None, node=None, dirty=False,
+                 preformatted=False,
+                 **kw):
+        if kw:
+            trace("unknown args", kw)
+        self.tag = tag_version
+        if dirty and distance is None:
+            distance = 0
+        self.distance = distance
+        self.node = node
+        self.time = datetime.datetime.now()
+        self.extra = kw
+        self.dirty = dirty
+        self.preformatted = preformatted
+
+    @property
+    def exact(self):
+        return self.distance is None
+
+    def __repr__(self):
+        return self.format_with(
+            '<ScmVersion {tag} d={distance}'
+            ' n={node} d={dirty} x={extra}>')
+
+    def format_with(self, fmt):
+        return fmt.format(
+            time=self.time,
+            tag=self.tag, distance=self.distance,
+            node=self.node, dirty=self.dirty, extra=self.extra)
+
+    def format_choice(self, clean_format, dirty_format):
+        return self.format_with(dirty_format if self.dirty else clean_format)
+
+
 def _parse_tag(tag, preformatted):
     if preformatted:
         return tag
@@ -50,10 +100,17 @@ def _parse_tag(tag, preformatted):
     return tag
 
 
-def guess_next_version(tag_version, distance):
+def meta(tag, distance=None, dirty=False, node=None, preformatted=False, **kw):
+    tag = _parse_tag(tag, preformatted)
+    trace('version', tag)
+    assert tag is not None, 'cant parse version %s' % tag
+    return ScmVersion(tag, distance, node, dirty, preformatted, **kw)
+
+
+def guess_next_version(tag_version, distance, suffix):
     version = _strip_local(str(tag_version))
     bumped = _bump_dev(version) or _bump_regex(version)
-    suffix = '.dev%s' % distance
+    suffix = '%s%s' % (suffix, distance)
     return bumped + suffix
 
 
@@ -88,22 +145,23 @@ def guess_next_dev_version(version):
             if target_branch.startswith('master'):
                 return '%s.%s' % (version.tag.base_version, version.format_with('rc{distance}'))
             elif target_branch.startswith('develop'):
-                return '%s.%s' % (version.tag.base_version, version.format_with('beta{distance}'))
+                return guess_next_version(version.tag, version.distance, 'alpha')
         elif branch_name.startswith('master'):
             return version.tag.base_version
         elif branch_name.startswith('release'):
-            return '%s.%s' % (version.tag.base_version, version.format_with('rc.{distance}'))
+            return '%s.%s' % (version.tag.base_version, version.format_with('rc{distance}'))
         elif branch_name.startswith('develop'):
-            return '%s.%s' % (version.tag.base_version, version.format_with('beta.{distance}'))
+            return guess_next_version(version.tag, version.distance, 'beta')
         else:
-            return '%s.%s' % (version.tag.base_version, version.format_with('alpha.{distance}'))
+            return guess_next_version(version.tag, version.distance, 'alpha')
 
 
 def get_local_node_and_date(version):
-    if version.exact or version.node is None:
-        return version.format_choice("", "+d{time:%Y%m%d}")
-    else:
-        return version.format_choice("+{node}", "+{node}.d{time:%Y%m%d}")
+    return ''
+    # if version.exact or version.node is None:
+    #     return version.format_choice("", "+d{time:%Y%m%d}")
+    # else:
+    #     return version.format_choice("+{node}", "+{node}.d{time:%Y%m%d}")
 
 
 def get_local_dirty_tag(version):
