@@ -11,7 +11,8 @@ from pkg_resources import iter_entry_points
 from .utils import trace
 
 try:
-    from pkg_resources import parse_version, SetuptoolsVersion
+    from pkg_resources import parse_version
+    from pkg_resources._vendor.packaging.version import Version as SetuptoolsVersion
 except ImportError as e:
     parse_version = SetuptoolsVersion = None
 
@@ -106,10 +107,10 @@ def meta(tag, distance=None, dirty=False, node=None, preformatted=False, **kw):
     return ScmVersion(tag, distance, node, dirty, preformatted, **kw)
 
 
-def guess_next_version(tag_version, distance):
+def guess_next_version(tag_version, distance, suffix):
     version = _strip_local(str(tag_version))
     bumped = _bump_dev(version) or _bump_regex(version)
-    suffix = '.dev%s' % distance
+    suffix = '%s%s' % (suffix, distance)
     return bumped + suffix
 
 
@@ -144,15 +145,15 @@ def guess_next_dev_version(version):
             if target_branch.startswith('master'):
                 return '%s.%s' % (version.tag.base_version, version.format_with('rc{distance}'))
             elif target_branch.startswith('develop'):
-                return '%s.%s' % (version.tag.base_version, version.format_with('alpha{distance}'))
+                return guess_next_version(version.tag, version.distance, 'alpha')
         elif branch_name.startswith('master'):
             return version.tag.base_version
         elif branch_name.startswith('release'):
-            return '%s.%s' % (version.tag.base_version, version.format_with('rc.{distance}'))
+            return '%s.%s' % (version.tag.base_version, version.format_with('rc{distance}'))
         elif branch_name.startswith('develop'):
-            return '%s.%s' % (version.tag.base_version, version.format_with('beta.{distance}'))
+            return guess_next_version(version.tag, version.distance, 'beta')
         else:
-            return '%s.%s' % (version.tag.base_version, version.format_with('alpha.{distance}'))
+            return guess_next_version(version.tag, version.distance, 'alpha')
 
 
 def get_local_node_and_date(version):
