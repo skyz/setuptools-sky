@@ -109,6 +109,7 @@ def meta(tag, distance=None, dirty=False, node=None, preformatted=False, **kw):
 
 def guess_next_version(tag_version, distance, suffix):
     version = _strip_local(str(tag_version))
+    version = version.split('rc')[0] # remove rc params
     bumped = _bump_dev(version) or _bump_regex(version)
     suffix = '%s%s' % (suffix, distance)
     return bumped + suffix
@@ -151,7 +152,7 @@ def guess_next_dev_version(version):
         elif branch_name.startswith('release'):
             return '%s.%s' % (version.tag.base_version, version.format_with('rc.{distance}'))
         elif branch_name.startswith('develop'):
-            return '%s.%s' % (version.tag.base_version, version.format_with('beta.{distance}'))
+            return guess_next_version(version.tag, version.distance, 'beta')
         else:
             return '%s.%s' % (version.tag.base_version, version.format_with('alpha.{distance}'))
 
