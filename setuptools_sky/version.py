@@ -8,7 +8,7 @@ from distutils import log
 
 from pkg_resources import iter_entry_points
 
-from .utils import trace
+from .utils import trace, do
 
 try:
     from pkg_resources import parse_version
@@ -134,6 +134,17 @@ def _bump_regex(version):
     return '%s%d' % (prefix, int(tail) + 1)
 
 
+def get_latest_version():
+    release_branches = do("git branch --list 'release*'")
+    version_list = map(lambda x: x.split('release/')[1].split('.'), release_branches.split('\n'))
+    max_version = (0, 0, 0)
+    for version_tokens in version_list:
+        major, minor, patch = version_tokens
+        if major > max_version[0] or minor > max_version[1] or patch > max_version[2]:
+            max_version = (major, minor, patch)
+    return '{}.{}.{}'.format(max_version[0], max_version[1], max_version[2])
+
+
 def guess_next_dev_version(version):
     if version.exact:
         return version.format_with("{tag}")
@@ -148,7 +159,7 @@ def guess_next_dev_version(version):
             elif target_branch.startswith('develop'):
                 return '%s.%s' % (version.tag.base_version, version.format_with('alpha{distance}'))
         elif branch_name.startswith('master'):
-            return version.tag.base_version
+            return get_latest_version()
         elif branch_name.startswith('release'):
             branch_version = branch_name.split('/')[1]
             return '%s.%s' % (branch_version, version.format_with('rc.{distance}'))
