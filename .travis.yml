@@ -2,27 +2,24 @@ language: python
 sudo: false
 python:
 - '2.7'
-- '3.4'
-- '3.5'
 - '3.6'
-#- '3.7'
 env:
 - TOXENV=py-test
 
 matrix:
   include:
-    - python: '3.5'
-      env: TOXENV=flake8
-    - python: '3.5'
-      env: TOXENV=check_readme
     - python: '2.7'
-      env: SELFINSTALL=1
-    - python: '3.5'
-      env: SELFINSTALL=1
+      env: TEST_SUITE=suite_2_7
+    - python: '3.6'
+      env: TEST_SUITE=suite_3_6
 cache:
   files:
   - $HOME/.pip/cache
   - $Home/.cache/pip
+
+notifications:
+   slack: sekomy:FkxfwQ5tMIOzvoqGxOmhhdp2
 install: pip install tox
+
 script:
-- python testing/runtests_travis.py
+- python testing/runtests_travis.py $TEST_SUITE
