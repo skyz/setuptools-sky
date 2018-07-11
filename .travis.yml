@@ -26,5 +26,4 @@ notifications:
    slack: sekomy:FkxfwQ5tMIOzvoqGxOmhhdp2
 
 script:
- - mkdir .git
  - tox -e $TOX_ENV
