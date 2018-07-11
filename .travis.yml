@@ -9,9 +9,9 @@ env:
 matrix:
   include:
     - python: '2.7'
-      env: TEST_SUITE=suite_2_7
+      env: TEST_SUITE=testing/runtests_travis.py
     - python: '3.6'
-      env: TEST_SUITE=suite_3_6
+      env: TEST_SUITE=testing/runtests_travis.py
 cache:
   files:
   - $HOME/.pip/cache
@@ -22,4 +22,4 @@ notifications:
 install: pip install tox
 
 script:
-- python testing/runtests_travis.py $TEST_SUITE
+- python $TEST_SUITE

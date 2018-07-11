@@ -87,7 +87,7 @@ def _do_parse(root, parse):
         return version
 
     raise LookupError(
-        "setuptools-scm was unable to detect version for %r.\n\n"
+        "setuptools-sky was unable to detect version for %r.\n\n"
         "Make sure you're either building from a fully intact git repository "
         "or PyPI tarballs. Most other sources (such as GitHub's tarballs, a "
         "git checkout without the .git folder) don't contain the necessary "
