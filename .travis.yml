@@ -6,12 +6,17 @@ python:
 env:
 - TOXENV=py-test
 
+install:
+ - pip install tox
+
 matrix:
   include:
     - python: '2.7'
-      env: TEST_SUITE=testing/runtests_travis.py
+      env:
+       - TOX_ENV=py27
     - python: '3.6'
-      env: TEST_SUITE=testing/runtests_travis.py
+      env:
+       - TOX_ENV=py36
 cache:
   files:
   - $HOME/.pip/cache
@@ -19,7 +24,7 @@ cache:
 
 notifications:
    slack: sekomy:FkxfwQ5tMIOzvoqGxOmhhdp2
-install: pip install tox
 
 script:
-- python $TEST_SUITE
+ - mkdir .git
+ - tox -e $TOX_ENV
