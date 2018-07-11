@@ -73,16 +73,13 @@ arguments = dict(
         setuptools_sky = setuptools_sky.integration:find_files
 
         [setuptools_sky.parse_scm]
-        .hg = setuptools_sky.hg:parse
         .git = setuptools_sky.git:parse
 
         [setuptools_sky.parse_scm_fallback]
-        .hg_archival.txt = setuptools_sky.hg:parse_archival
         PKG-INFO = setuptools_sky.hacks:parse_pkginfo
         pip-egg-info = setuptools_sky.hacks:parse_pip_egg_info
 
         [setuptools_sky.files_command]
-        .hg = setuptools_sky.hg:FILES_COMMAND
         .git = setuptools_sky.git:FILES_COMMAND
 
         [setuptools_sky.version_scheme]
