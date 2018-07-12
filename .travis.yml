@@ -9,7 +9,11 @@ matrix:
     - python: '2.7'
       env:
        - TOX_ENV=py2
+    - python: '2.7'
+      env:
        - TOX_ENV=prospector
+    - python: '2.7'
+      env:
        - TOX_ENV=check_readme
     - python: '3.6'
       env:
