@@ -1,0 +1,30 @@
+language: python
+sudo: false
+
+install:
+ - pip install tox
+
+matrix:
+  include:
+    - python: '2.7'
+      env:
+       - TOX_ENV=py2
+    - python: '2.7'
+      env:
+       - TOX_ENV=prospector
+    - python: '2.7'
+      env:
+       - TOX_ENV=check_readme
+    - python: '3.6'
+      env:
+       - TOX_ENV=py3
+cache:
+  files:
+  - $HOME/.pip/cache
+  - $Home/.cache/pip
+
+notifications:
+   slack: sekomy:FkxfwQ5tMIOzvoqGxOmhhdp2
+
+script:
+ - tox -e $TOX_ENV

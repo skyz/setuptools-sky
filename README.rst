@@ -1,5 +1,7 @@
 setuptools_sky
 ===============
+.. image:: https://travis-ci.org/sekomy/setuptools-sky.svg?branch=master
+    :target: https://travis-ci.org/sekomy/setuptools-sky
 
 :code:`setuptools_sky` handles managing your python package versions
 in scm metadata instead of declaring them as the version argument
