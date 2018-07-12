@@ -54,7 +54,7 @@ def scm_config():
 
 arguments = dict(
     name='setuptools_sky',
-    url='https://bitbucket.org/sekomy/setuptools-sky',
+    url='https://github.com/sekomy/setuptools-sky',
     author='Sekom Yazilim',
     author_email='info@sekomyazilim.com.tr',
     license='MIT',
