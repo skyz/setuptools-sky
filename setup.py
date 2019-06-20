@@ -11,25 +11,24 @@ pip usage is recommended
 """
 from __future__ import print_function
 
-import setuptools
+import os
+import sys
 
-with open('README.rst') as fp:
-    long_description = fp.read()
+import setuptools
 
 
 def scm_config():
-    import os
-    import sys
     here = os.path.dirname(os.path.abspath(__file__))
-    egg_info = os.path.join(here, 'setuptools_sky.egg-info')
+    egg_info = os.path.join(here, "setuptools_sky.egg-info")
     has_entrypoints = os.path.isdir(egg_info)
+    import pkg_resources
 
     sys.path.insert(0, here)
+    pkg_resources.working_set.add_entry(here)
     from setuptools_sky.hacks import parse_pkginfo
     from setuptools_sky.git import parse as parse_git
     from setuptools_sky.version import (
-
-        guess_next_dev_version,
+        simplified_semver_version,
         get_local_node_and_date,
     )
 
@@ -40,31 +39,31 @@ def scm_config():
             return parse_git(root)
 
     config = dict(
-        version_scheme=guess_next_dev_version,
-        local_scheme=get_local_node_and_date,
+        version_scheme=simplified_semver_version, local_scheme=get_local_node_and_date
     )
 
     if has_entrypoints:
-        return dict(use_sky_version=config)
+        return dict(use_scm_version=config)
     else:
         from setuptools_sky import get_version
-        return dict(version=get_version(
-            root=here, parse=parse, **config))
+
+        return dict(version=get_version(root=here, parse=parse, **config))
+
+
+with open("README.rst") as fp:
+    long_description = fp.read()
 
 
 arguments = dict(
-    name='setuptools_sky',
-    url='https://bitbucket.org/sekomy/setuptools-sky',
-    author='Sekom Yazilim',
-    author_email='info@sekomyazilim.com.tr',
-    license='MIT',
-    description='the blessed package to manage your versions by scm tags',
+    name="setuptools_sky",
+    url="https://bitbucket.org/sekomy/setuptools-sky",
     zip_safe=True,
+    author="SKyZ",
+    author_email="info@skyz.tech",
+    description="the blessed package to manage your versions by scm tags",
     long_description=long_description,
-
-    packages=[
-        'setuptools_sky',
-    ],
+    license="MIT",
+    packages=["setuptools_sky"],
     entry_points="""
         [distutils.setup_keywords]
         use_sky_version = setuptools_sky.integration:version_keyword
@@ -80,38 +79,43 @@ arguments = dict(
         .hg_archival.txt = setuptools_sky.hg:parse_archival
         PKG-INFO = setuptools_sky.hacks:parse_pkginfo
         pip-egg-info = setuptools_sky.hacks:parse_pip_egg_info
+        setup.py = setuptools_sky.hacks:fallback_version
 
         [setuptools_sky.files_command]
-        .hg = setuptools_sky.hg:FILES_COMMAND
-        .git = setuptools_sky.git:FILES_COMMAND
+        .hg = setuptools_sky.file_finder_hg:hg_find_files
+        .git = setuptools_sky.file_finder_git:git_find_files
 
         [setuptools_sky.version_scheme]
         guess-next-dev = setuptools_sky.version:guess_next_dev_version
         post-release = setuptools_sky.version:postrelease_version
+        python-simplified-semver = setuptools_sky.version:simplified_semver_version
 
         [setuptools_sky.local_scheme]
         node-and-date = setuptools_sky.version:get_local_node_and_date
+        node-and-timestamp = \
+        setuptools_sky.version:get_local_node_and_timestamp
         dirty-tag = setuptools_sky.version:get_local_dirty_tag
     """,
     classifiers=[
-        'Development Status :: 4 - Beta',
-        'Intended Audience :: Developers',
-        'License :: OSI Approved :: MIT License',
-        'Programming Language :: Python',
-        'Programming Language :: Python :: 3',
-        'Programming Language :: Python :: 2.6',
-        'Programming Language :: Python :: 2.7',
-        'Programming Language :: Python :: 3.3',
-        'Programming Language :: Python :: 3.4',
-        'Programming Language :: Python :: 3.5',
-        'Programming Language :: Python :: 3.6',
-        'Topic :: Software Development :: Libraries',
-        'Topic :: Software Development :: Version Control',
-        'Topic :: System :: Software Distribution',
-        'Topic :: Utilities',
+        "Development Status :: 4 - Beta",
+        "Intended Audience :: Developers",
+        "License :: OSI Approved :: MIT License",
+        "Programming Language :: Python",
+        "Programming Language :: Python :: 2",
+        "Programming Language :: Python :: 3",
+        "Programming Language :: Python :: 2.7",
+        "Programming Language :: Python :: 3.4",
+        "Programming Language :: Python :: 3.5",
+        "Programming Language :: Python :: 3.6",
+        "Programming Language :: Python :: 3.7",
+        "Topic :: Software Development :: Libraries",
+        "Topic :: Software Development :: Version Control",
+        "Topic :: System :: Software Distribution",
+        "Topic :: Utilities",
     ],
+    python_requires=">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*",
 )
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     arguments.update(scm_config())
     setuptools.setup(**arguments)

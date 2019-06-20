@@ -1,9 +1,8 @@
-import os
+from pkg_resources import iter_entry_points
 
-from .version import _warn_if_setuptools_outdated
-from .utils import do
-from .discover import iter_matching_entrypoints
 from . import get_version
+from .utils import do
+from .version import _warn_if_setuptools_outdated
 
 
 def version_keyword(dist, keyword, value):
@@ -12,34 +11,20 @@ def version_keyword(dist, keyword, value):
         return
     if value is True:
         value = {}
-    if getattr(value, '__call__', None):
+    if getattr(value, "__call__", None):
         value = value()
-    # this piece of code is a hack to counter the mistake in root finding
-    matching_fallbacks = iter_matching_entrypoints(
-        '.', 'setuptools_sky.parse_scm_fallback')
-    if any(matching_fallbacks):
-        value.pop('root', None)
+
     dist.metadata.version = get_version(**value)
 
 
-def find_files(path='.'):
-    if not path:
-        path = '.'
-    abs = os.path.abspath(path)
-    ep = next(iter_matching_entrypoints(
-        abs, 'setuptools_sky.files_command'), None)
-    if ep:
+def find_files(path=""):
+    for ep in iter_entry_points("setuptools_sky.files_command"):
         command = ep.load()
-        try:
-            if isinstance(command, str):
-                return do(ep.load(), path).splitlines()
-            else:
-                return command(path)
-        except Exception:
-            import traceback
-            print("File Finder Failed for %s" % ep)
-            traceback.print_exc()
-            return []
-
-    else:
-        return []
+        if isinstance(command, str):
+            # this technique is deprecated
+            res = do(ep.load(), path or ".").splitlines()
+        else:
+            res = command(path)
+        if res:
+            return res
+    return []
